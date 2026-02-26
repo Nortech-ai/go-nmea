@@ -59,6 +59,10 @@ type BaseSentence struct {
 	Checksum string   // The (raw) Checksum
 	Raw      string   // The raw NMEA sentence received
 	TagBlock TagBlock // NMEA tagblock
+
+	// NaNForEmptyFloat when true causes the parser to return math.NaN() for empty float64 fields
+	// instead of 0. This is propagated from SentenceParser.NaNForEmptyFloat.
+	NaNForEmptyFloat bool
 }
 
 // Prefix returns the talker and type of message
@@ -107,6 +111,14 @@ type SentenceParser struct {
 	// OnBaseSentence is a callback for accessing/modifying the base sentence
 	// before further parsing is done.
 	OnBaseSentence func(sentence *BaseSentence) error
+
+	// NaNForEmptyFloat when set to true makes the parser return math.NaN() as the value
+	// for empty float64 fields instead of 0. This allows distinguishing between a field
+	// that is empty/missing (NaN) and a field that has value 0.0.
+	// NullFloat64 will return Float64{Value: math.NaN(), Valid: false} for empty fields.
+	// Float64 (which returns NullFloat64.Value) will return math.NaN() for empty fields.
+	// This does not introduce breaking changes to the API as the struct field types remain float64.
+	NaNForEmptyFloat bool
 }
 
 func (p *SentenceParser) parseBaseSentence(raw string) (BaseSentence, error) {
@@ -153,12 +165,13 @@ func (p *SentenceParser) parseBaseSentence(raw string) (BaseSentence, error) {
 		return BaseSentence{}, err
 	}
 	sentence := BaseSentence{
-		Talker:   talkerID,
-		Type:     typ,
-		Fields:   fields[1:],
-		Checksum: checksumRaw,
-		Raw:      raw,
-		TagBlock: tagBlock,
+		Talker:           talkerID,
+		Type:             typ,
+		Fields:           fields[1:],
+		Checksum:         checksumRaw,
+		Raw:              raw,
+		TagBlock:         tagBlock,
+		NaNForEmptyFloat: p.NaNForEmptyFloat,
 	}
 	if p.CheckCRC == nil {
 		err = CheckCRC(sentence, rawFields)
