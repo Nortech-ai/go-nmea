@@ -129,13 +129,18 @@ func (p *Parser) Int64(i int, context string) int64 {
 }
 
 // NullInt64 returns the int64 value at the specified index.
-// If the value is an empty string, Valid is set to false
+// If the value is an empty string, Valid is set to false.
+// When BaseSentence.MaxInt64ForEmptyInt is true, empty fields return Int64{Value: math.MaxInt64, Valid: false}
+// instead of Int64{Value: 0, Valid: false}.
 func (p *Parser) NullInt64(i int, context string) Int64 {
 	s := p.String(i, context)
 	if p.err != nil {
 		return Int64{}
 	}
 	if s == "" {
+		if p.MaxInt64ForEmptyInt {
+			return Int64{Value: math.MaxInt64, Valid: false}
+		}
 		return Int64{}
 	}
 	v, err := strconv.ParseInt(s, 10, 64)
