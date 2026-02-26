@@ -2,6 +2,7 @@ package nmea
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -153,12 +154,17 @@ func (p *Parser) Float64(i int, context string) float64 {
 
 // NullFloat64 returns the Float64 value at the specified index.
 // If the value is an empty string, Valid is set to false.
+// When BaseSentence.NaNForEmptyFloat is true, empty fields return Float64{Value: math.NaN(), Valid: false}
+// instead of Float64{Value: 0, Valid: false}.
 func (p *Parser) NullFloat64(i int, context string) Float64 {
 	s := p.String(i, context)
 	if p.err != nil {
 		return Float64{}
 	}
 	if s == "" {
+		if p.NaNForEmptyFloat {
+			return Float64{Value: math.NaN(), Valid: false}
+		}
 		return Float64{}
 	}
 	v, err := strconv.ParseFloat(s, 64)
