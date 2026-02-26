@@ -63,6 +63,10 @@ type BaseSentence struct {
 	// NaNForEmptyFloat when true causes the parser to return math.NaN() for empty float64 fields
 	// instead of 0. This is propagated from SentenceParser.NaNForEmptyFloat.
 	NaNForEmptyFloat bool
+
+	// MaxInt64ForEmptyInt when true causes the parser to return math.MaxInt64 for empty int64 fields
+	// instead of 0. This is propagated from SentenceParser.MaxInt64ForEmptyInt.
+	MaxInt64ForEmptyInt bool
 }
 
 // Prefix returns the talker and type of message
@@ -119,6 +123,14 @@ type SentenceParser struct {
 	// Float64 (which returns NullFloat64.Value) will return math.NaN() for empty fields.
 	// This does not introduce breaking changes to the API as the struct field types remain float64.
 	NaNForEmptyFloat bool
+
+	// MaxInt64ForEmptyInt when set to true makes the parser return math.MaxInt64 as the value
+	// for empty int64 fields instead of 0. This allows distinguishing between a field
+	// that is empty/missing (MaxInt64) and a field that has value 0.
+	// NullInt64 will return Int64{Value: math.MaxInt64, Valid: false} for empty fields.
+	// Int64 (which returns NullInt64.Value) will return math.MaxInt64 for empty fields.
+	// This does not introduce breaking changes to the API as the struct field types remain int64.
+	MaxInt64ForEmptyInt bool
 }
 
 func (p *SentenceParser) parseBaseSentence(raw string) (BaseSentence, error) {
@@ -171,7 +183,8 @@ func (p *SentenceParser) parseBaseSentence(raw string) (BaseSentence, error) {
 		Checksum:         checksumRaw,
 		Raw:              raw,
 		TagBlock:         tagBlock,
-		NaNForEmptyFloat: p.NaNForEmptyFloat,
+		NaNForEmptyFloat:   p.NaNForEmptyFloat,
+		MaxInt64ForEmptyInt: p.MaxInt64ForEmptyInt,
 	}
 	if p.CheckCRC == nil {
 		err = CheckCRC(sentence, rawFields)

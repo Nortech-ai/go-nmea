@@ -227,6 +227,42 @@ func TestParser(t *testing.T) {
 			},
 		},
 		{
+			name:     "Int64 empty field is MaxInt64 when MaxInt64ForEmptyInt is set",
+			fields:   []string{""},
+			expected: int64(math.MaxInt64),
+			parse: func(p *Parser) interface{} {
+				p.MaxInt64ForEmptyInt = true
+				return p.Int64(0, "context")
+			},
+		},
+		{
+			name:     "NullInt64 empty field returns MaxInt64 when MaxInt64ForEmptyInt is set",
+			fields:   []string{""},
+			expected: Int64{Value: math.MaxInt64, Valid: false},
+			parse: func(p *Parser) interface{} {
+				p.MaxInt64ForEmptyInt = true
+				return p.NullInt64(0, "context")
+			},
+		},
+		{
+			name:     "NullInt64 non-empty field unaffected by MaxInt64ForEmptyInt",
+			fields:   []string{"456"},
+			expected: Int64{Value: 456, Valid: true},
+			parse: func(p *Parser) interface{} {
+				p.MaxInt64ForEmptyInt = true
+				return p.NullInt64(0, "context")
+			},
+		},
+		{
+			name:     "NullInt64 zero value unaffected by MaxInt64ForEmptyInt",
+			fields:   []string{"0"},
+			expected: Int64{Value: 0, Valid: true},
+			parse: func(p *Parser) interface{} {
+				p.MaxInt64ForEmptyInt = true
+				return p.NullInt64(0, "context")
+			},
+		},
+		{
 			name:     "NullFloat64",
 			fields:   []string{"123.123"},
 			expected: Float64{Value: 123.123, Valid: true},
