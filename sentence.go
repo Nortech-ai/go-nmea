@@ -125,8 +125,8 @@ type SentenceParser struct {
 	MaxInt64ForEmptyInt bool
 }
 
-// parserOptions returns the ParserOption slice derived from the SentenceParser configuration.
-func (p *SentenceParser) parserOptions() []ParserOption {
+// ParserOptions returns the ParserOption slice derived from the SentenceParser configuration.
+func (p *SentenceParser) ParserOptions() []ParserOption {
 	var opts []ParserOption
 	if p.NaNForEmptyFloat {
 		opts = append(opts, WithNaNForEmptyFloat(true))
@@ -307,7 +307,7 @@ func (p *SentenceParser) Parse(raw string) (Sentence, error) {
 		return parser(s)
 	}
 
-	opts := p.parserOptions()
+	opts := p.ParserOptions()
 
 	if s.Raw[0] == SentenceStart[0] {
 		switch s.Type {
